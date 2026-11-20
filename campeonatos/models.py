@@ -25,6 +25,16 @@ class Cidade(models.Model):
     def __str__(self):
         return f"{self.nome} - {self.uf}"
 
+class Categoria(models.Model):
+    nome = models.CharField(max_length=50, unique=True)
+    idade_maxima = models.PositiveIntegerField(
+        null=True,
+        blank=True
+    )
+
+    def __str__(self):
+        return self.nome
+
 class Campeonato(models.Model):
     nome = models.CharField(max_length=100)
     modalidade = models.ForeignKey(
@@ -32,6 +42,15 @@ class Campeonato(models.Model):
         on_delete=models.PROTECT,
         related_name='campeonatos'
     )
+
+    categoria = models.ForeignKey(
+            Categoria,
+            on_delete=models.PROTECT,
+            related_name='campeonatos',
+            null=True,
+            blank=True
+        )
+    
     cidade = models.ForeignKey(
         Cidade,
         on_delete=models.PROTECT,
@@ -39,6 +58,7 @@ class Campeonato(models.Model):
         null=True,
         blank=True
     )
+
     descricao = models.TextField(blank=True)
     data_inicio = models.DateField()
     data_fim = models.DateField()
@@ -53,6 +73,20 @@ class Campeonato(models.Model):
 
     def __str__(self):
         return self.nome
+
+    def jogador_elegivel(self, jogador):
+        idade_no_ano = (
+            self.data_inicio.year
+            - jogador.data_nascimento.year
+    )
+
+        if self.categoria is None:
+            return False
+        
+        if self.categoria.idade_maxima is None:
+            return True
+
+        return idade_no_ano <= self.categoria.idade_maxima
 
 class Equipe(models.Model):
     nome = models.CharField(max_length=100)
@@ -72,4 +106,16 @@ class Equipe(models.Model):
     def __str__(self):
         return self.nome
 
+class Jogador(models.Model):
+    nome = models.CharField(max_length=150)
+    data_nascimento = models.DateField()
+    cpf = models.CharField(max_length=11, unique=True)
+    numero_camisa = models.PositiveIntegerField(
+        null=True,
+        blank=True
+    )
+
+    def __str__(self):
+        return self.nome
 # Create your models here.
+
