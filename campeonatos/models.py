@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 
 class Modalidade(models.Model):
     nome = models.CharField(max_length=50, unique=True)
@@ -110,12 +111,86 @@ class Jogador(models.Model):
     nome = models.CharField(max_length=150)
     data_nascimento = models.DateField()
     cpf = models.CharField(max_length=11, unique=True)
+
+
+    class Meta:
+        verbose_name = 'Jogador'
+        verbose_name_plural = 'Jogadores'
+    def __str__(self):
+        return self.nome
+
+class JogadorEquipe(models.Model):
+    jogador = models.ForeignKey(
+        Jogador,
+        on_delete=models.PROTECT,
+        related_name='vinculos'
+    )
+    equipe = models.ForeignKey(
+        Equipe,
+        on_delete=models.PROTECT,
+        related_name='jogadores_vinculados'
+    )
+
+    data_entrada = models.DateField()
+    data_saida = models.DateField(
+        null = True,
+        blank = True
+    )
+
     numero_camisa = models.PositiveIntegerField(
         null=True,
         blank=True
     )
 
+    def clean(self):
+        super().clean()
+
+        if self.data_saida and self.data_saida < self.data_entrada:
+            raise ValidationError({ 'data_saida': 'A data de saída não pode ser anterior à data de entrada.' })
+    class Meta:
+        verbose_name = 'Vínculo de Jogador'
+        verbose_name_plural = 'Vínculos de Jogadores'
     def __str__(self):
-        return self.nome
-# Create your models here.
+        return f"{self.jogador.nome} - {self.equipe.nome}"
+
+
+class InscricaoEquipe(models.Model):
+    equipe = models.ForeignKey(
+        Equipe,
+        on_delete= models.PROTECT,
+        related_name='inscricoes'
+    )
+
+    campeonato = models.ForeignKey(
+        Campeonato,
+        on_delete=models.PROTECT,
+        related_name='equipes_inscritas'
+    )
+
+    data_inscricao = models.DateField(auto_now_add=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=[
+             ('pendente', 'Pendente'),
+            ('aprovada', 'Aprovada'),
+            ('Cancelada', 'Cancelada'),
+        ],
+        default='pendente'
+    )
+
+    class Meta:
+        verbose_name = 'Inscrição de equipe'
+        verbose_name_plural = 'Inscrições de equipes'
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['equipe', 'campeonato'],
+                name='equipe_campeonato_unicos'
+            )
+        ]
+
+        def __str__(self):
+            return f'{self.equipe.nome} - {self.campeonato.nome}'
+        
 
