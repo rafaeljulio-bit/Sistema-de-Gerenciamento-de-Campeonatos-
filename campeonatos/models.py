@@ -148,8 +148,8 @@ class JogadorEquipe(models.Model):
         if self.data_saida and self.data_saida < self.data_entrada:
             raise ValidationError({ 'data_saida': 'A data de saída não pode ser anterior à data de entrada.' })
     class Meta:
-        verbose_name = 'Vínculo de Jogador'
-        verbose_name_plural = 'Vínculos de Jogadores'
+        verbose_name = 'Vínculo de Jogador com equipe'
+        verbose_name_plural = 'Vínculos de Jogadores com equipes'
     def __str__(self):
         return f"{self.jogador.nome} - {self.equipe.nome}"
 
@@ -180,8 +180,8 @@ class InscricaoEquipe(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Inscrição de equipe'
-        verbose_name_plural = 'Inscrições de equipes'
+        verbose_name = 'Equipe inscrita em campeonato'
+        verbose_name_plural = 'Equipes inscritas em campeonatos'
 
         constraints = [
             models.UniqueConstraint(
@@ -190,7 +190,83 @@ class InscricaoEquipe(models.Model):
             )
         ]
 
-        def __str__(self):
+    def __str__(self):
             return f'{self.equipe.nome} - {self.campeonato.nome}'
         
+class InscricaoJogador(models.Model):
+    jogador_equipe = models.ForeignKey(
+        JogadorEquipe,
+        on_delete=models.PROTECT,
+        related_name='inscricoes'
+    )
 
+    inscricao_equipe = models.ForeignKey(
+        InscricaoEquipe,
+        on_delete=models.PROTECT,
+        related_name='jogadores_inscritos'
+    )
+
+    data_inscricao = models.DateField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Jogadore inscrito em campeonato'
+        verbose_name_plural = 'Jogadores inscritos em campeonatos'
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['jogador_equipe', 'inscricao_equipe'],
+                name='vinculo_inscricao_unicos'
+            )
+        ]
+
+    def clean(self):
+        super().clean()
+
+        if not self.jogador_equipe_id or not self.inscricao_equipe_id:
+            return
+
+        vinculo = self.jogador_equipe
+        inscricao = self.inscricao_equipe
+        campeonato = inscricao.campeonato
+
+        if vinculo.equipe_id != inscricao.equipe_id:
+            raise ValidationError(
+                'O jogador não pertence à equipe inscrita.'
+            )
+
+        if vinculo.data_entrada > campeonato.data_inicio:
+            raise ValidationError(
+                'O jogador ainda não estava vinculado à equipe no início do campeonato.'
+            )
+
+        if (
+            vinculo.data_saida is not None
+            and vinculo.data_saida < campeonato.data_inicio
+        ):
+            raise ValidationError(
+                'O jogador não estava mais vinculado à equipe no início do campeonato.'
+            )
+        
+        if not campeonato.jogador_elegivel(vinculo.jogador):
+            raise ValidationError('O jogador não é elegível para a categoria do campeonato.'
+            )
+        
+        duplicado = InscricaoJogador.objects.filter(
+            inscricao_equipe__campeonato=campeonato,
+            jogador_equipe__jogador=vinculo.jogador
+        ).exclude(pk=self.pk)
+
+        if duplicado.exists():
+            raise ValidationError(
+                'Este jogador já está inscrito em outra equipe neste campeonato.'
+        )
+
+    def save(self, *args, **kwargs):
+            self.full_clean()
+            super().save(*args,**kwargs)
+
+    def __str__(self):
+            return (
+                f'{self.jogador_equipe.jogador.nome} - '
+                f'{self.inscricao_equipe.campeonato.nome}'
+            )

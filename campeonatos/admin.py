@@ -8,6 +8,7 @@ Equipe,
 Jogador,
 JogadorEquipe,
 InscricaoEquipe,
+InscricaoJogador,
 )
 admin.site.register(Cidade)
 admin.site.register(Modalidade)
@@ -17,4 +18,5 @@ admin.site.register(Equipe)
 admin.site.register(Jogador)
 admin.site.register(JogadorEquipe)
 admin.site.register(InscricaoEquipe)
+admin.site.register(InscricaoJogador)
 # Register your models here.
