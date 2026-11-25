@@ -11,6 +11,7 @@ Jogador,
 JogadorEquipe,
 InscricaoEquipe,
 InscricaoJogador,
+Partida,
 )
 admin.site.register(Cidade)
 admin.site.register(Modalidade)
@@ -21,6 +22,33 @@ admin.site.register(Jogador)
 admin.site.register(JogadorEquipe)
 admin.site.register(InscricaoEquipe)
 admin.site.register(InscricaoJogador)
+
+@admin.register(Partida)
+class PartidaAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'campeonato',
+        'equipe_mandante',
+        'equipe_visitante',
+        'data',
+        'horario',
+        'local',
+        'status',
+    )
+
+    list_filter = (
+        'campeonato',
+        'status',
+        'data',
+    )
+
+    search_fields = (
+        'equipe_mandante__equipe__nome',
+        'equipe_visitante__equipe__nome',
+        'local',
+    )
+    
+    ordering = ('data', 'horario')
 
 admin.site.unregister(User)
 
