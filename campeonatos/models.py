@@ -209,7 +209,7 @@ class InscricaoJogador(models.Model):
     data_inscricao = models.DateField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Jogadore inscrito em campeonato'
+        verbose_name = 'Jogador inscrito em campeonato'
         verbose_name_plural = 'Jogadores inscritos em campeonatos'
 
         constraints = [
