@@ -34,6 +34,7 @@ class PartidaAdmin(admin.ModelAdmin):
         'horario',
         'local',
         'status',
+        'exibir_resultado',
     )
 
     list_filter = (
@@ -49,6 +50,28 @@ class PartidaAdmin(admin.ModelAdmin):
     )
     
     ordering = ('data', 'horario')
+
+    @admin.display(description='Placar')
+    def placar(self, obj):
+        if obj.gols_mandante is None or obj.gols_visitante is None:
+            return '-'
+
+        return f'{obj.gols_mandante} x {obj.gols_visitante}'
+
+    @admin.display(description='Resultado')
+    def exibir_resultado(self, obj):
+        resultado = obj.resultado()
+
+        if resultado == 'mandante':
+            return f'Vitória de {obj.equipe_mandante.equipe}'
+
+        elif resultado == 'visitante':
+            return f'Vitória de {obj.equipe_visitante.equipe}'
+
+        elif resultado == 'empate':
+            return 'Empate'
+
+        return '-'
 
 admin.site.unregister(User)
 

@@ -307,6 +307,16 @@ class Partida(models.Model):
         default='agendada'
     )
 
+
+    gols_mandante = models.PositiveIntegerField(
+        null=True,
+        blank=True
+    )
+
+    gols_visitante = models.PositiveIntegerField(
+        null=True,
+        blank=True
+    )
     class Meta:
         verbose_name = 'Partida'
         verbose_name_plural = 'Partidas'
@@ -360,10 +370,39 @@ class Partida(models.Model):
                     'A partida não pode ocorrer após o campeonato.'
                 )
 
+        if self.status == 'realizada':
+            if self.gols_mandante is None or self.gols_visitante is None:
+                raise ValidationError(
+                    'Uma partida realizada deve possuir um placar.'
+                )
+
+        else:
+            if self.gols_mandante is not None or self.gols_visitante is not None:
+                raise ValidationError(
+                    'Somente partidas realizadas podem possuir placar.'
+                )
+
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
-    
+
+    def resultado(self):
+
+        if self.status != 'realizada':
+            return None
+
+        if self.gols_mandante is None or self.gols_visitante is None:
+            return None
+
+        if self.gols_mandante > self.gols_visitante:
+            return 'mandante'
+
+        elif self.gols_mandante < self.gols_visitante:
+            return 'visitante'
+
+        else:
+            return 'empate'
+        
     def __str__(self):
         return (
             f'{self.equipe_mandante.equipe} x'
