@@ -1,4 +1,6 @@
 from.models import InscricaoEquipe, Partida
+from django.utils import timezone
+from django.db.models import Q
 
 def calcular_classificacao(campeonato):
 
@@ -93,3 +95,54 @@ def calcular_classificacao(campeonato):
         equipe['posicao']= posicao
 
     return tabela
+
+def consultar_partidas(campeonato):
+
+    partidas = Partida.objects.filter(
+        campeonato=campeonato
+    ).select_related(
+        'equipe_mandante__equipe',
+        'equipe_visitante__equipe'
+    )
+
+    return partidas.order_by('data', 'horario')
+
+def separar_partidas(campeonato):
+
+    partidas = consultar_partidas(campeonato)
+
+    agora = timezone.localtime()
+    hoje = agora.date()
+    horario_atual = agora.time()
+
+    realizadas = partidas.filter(
+        status='realizada'
+    ).order_by('-data', '-horario')
+
+    proximas = partidas.filter(
+        Q(data__gt=hoje) |
+        Q(data=hoje, horario__gte=horario_atual),
+        status='agendada'
+    )
+
+    pendentes = partidas.filter(
+        Q(data__lt=hoje) |
+        Q(data=hoje, horario__lt=horario_atual),
+        status='agendada'
+    )
+
+    adiadas = partidas.filter(
+        status='adiada'
+    )
+
+    canceladas = partidas.filter(
+        status='cancelada'
+    )
+
+    return {
+        'realizadas': realizadas,
+        'proximas': proximas,
+        'pendentes': pendentes,
+        'adiadas': adiadas,
+        'canceladas':canceladas,
+    }
