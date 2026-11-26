@@ -67,13 +67,28 @@ class Campeonato(models.Model):
         max_length=20,
         choices=[
             ('planejado', 'planejado'),
-            ('andamento', 'andamento'),
+            ('andamento', 'Em andamento'),
+            ('finalizado', 'Finalizado'),
+            ('cancelado', 'Cancelado'),
         ],
         default='planejado'
     )
 
     def __str__(self):
         return self.nome
+
+    def clean(self):
+        super().clean()
+
+        if self.data_inicio and self.data_fim:
+            if self.data_fim < self.data_inicio:
+                raise ValidationError({
+                    'data_fim': 'A data de término não pode ser anterior à data de início.'
+                })
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def jogador_elegivel(self, jogador):
         idade_no_ano = (
@@ -145,11 +160,31 @@ class JogadorEquipe(models.Model):
     def clean(self):
         super().clean()
 
+        if self.pk:
+            anterior = JogadorEquipe.objects.get(pk=self.pk)
+        
+            if (
+                 anterior.jogador_id != self.jogador_id
+                or anterior.equipe_id != self.equipe_id
+            ):
+                if InscricaoJogador.objects.filter(
+                    jogador_equipe=self
+                ).exists():
+                    raise ValidationError(
+                        'Não é possível alterar um vínculo '
+                        'com inscrições em campeonatos.'
+                    )
+
         if self.data_saida and self.data_saida < self.data_entrada:
             raise ValidationError({ 'data_saida': 'A data de saída não pode ser anterior à data de entrada.' })
     class Meta:
         verbose_name = 'Vínculo de Jogador com equipe'
         verbose_name_plural = 'Vínculos de Jogadores com equipes'
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+    
     def __str__(self):
         return f"{self.jogador.nome} - {self.equipe.nome}"
 
@@ -174,7 +209,7 @@ class InscricaoEquipe(models.Model):
         choices=[
              ('pendente', 'Pendente'),
             ('aprovada', 'Aprovada'),
-            ('Cancelada', 'Cancelada'),
+            ('cancelada', 'Cancelada'),
         ],
         default='pendente'
     )
@@ -189,6 +224,45 @@ class InscricaoEquipe(models.Model):
                 name='equipe_campeonato_unicos'
             )
         ]
+
+    def clean(self):
+        super().clean()
+
+        if self.pk:
+            anterior = InscricaoEquipe.objects.get(pk=self.pk)
+
+            if (
+                anterior.equipe_id != self.equipe_id
+                or anterior.campeonato_id != self.campeonato_id
+            ):
+                if(
+                    self.jogadores_inscritos.exists()
+                    or self.partidas_mandante.exists()
+                    or self.partidas_visitante.exists()
+                ):
+                    raise ValidationError(
+                        'Não é possível alterar a equipe ou o campeonato '
+                        'de uma inscrição com registros vinculados.'
+                    )
+
+        if self.pk and self.status != 'aprovada':
+
+            if self.jogadores_inscritos.exists():
+                raise ValidationError(
+                    'Esta equipe possui jogadores inscritos.'
+                )
+
+            if (
+                self.partidas_mandante.exists()
+                or self.partidas_visitante.exists()
+            ):
+                raise ValidationError(
+                    'Esta equipe possui partidas vinculadas.'
+                )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
             return f'{self.equipe.nome} - {self.campeonato.nome}'
@@ -228,6 +302,11 @@ class InscricaoJogador(models.Model):
         vinculo = self.jogador_equipe
         inscricao = self.inscricao_equipe
         campeonato = inscricao.campeonato
+
+        if inscricao.status != 'aprovada':
+            raise ValidationError(
+                'A inscrição da equipe no campeonato não está aprovada'
+            )
 
         if vinculo.equipe_id != inscricao.equipe_id:
             raise ValidationError(
@@ -295,12 +374,12 @@ class Partida(models.Model):
     equipe_visitante = models.ForeignKey(
         InscricaoEquipe,
         on_delete=models.PROTECT,
-        related_name='partidas_vistante'
+        related_name='partidas_visitante'
     )
 
     data = models.DateField()
     horario = models.TimeField()
-    local=models.CharField(max_length=150)
+    local = models.CharField(max_length=150)
     status = models.CharField(
         max_length=15,
         choices=STATUS_CHOICES,

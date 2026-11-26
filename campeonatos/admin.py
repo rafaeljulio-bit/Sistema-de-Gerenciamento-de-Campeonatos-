@@ -34,6 +34,7 @@ class PartidaAdmin(admin.ModelAdmin):
     list_display = (
         'campeonato',
         'equipe_mandante',
+        'placar',
         'equipe_visitante',
         'data',
         'horario',
@@ -93,7 +94,9 @@ class UsuarioAdmin(UserAdmin):
             groups__name='Organizador',
             is_superuser=False
         ).exclude(
-            groups__name='Administrador'
+            groups__in=Group.objects.exclude(name='Organizador')
+        ).exclude(
+            user_permissions__isnull=False
         ).distinct()
 
     def get_fieldsets(self, request, obj=None):
@@ -132,14 +135,29 @@ class UsuarioAdmin(UserAdmin):
 
     def has_change_permission(self, request, obj=None):
         if not request.user.is_superuser:
+
+            if not request.user.groups.filter(
+                name='Administrador'
+            ).exists():
+                return False
+            
             if obj is not None:
-                if obj.is_superuser or obj.groups.filter(
-                    name='Administrador'
+                if not self.get_queryset(request).filter(
+                    pk=obj.pk
                 ).exists():
                     return False
 
         return super().has_change_permission(request, obj)
 
+    def has_add_permission(self, request):
+
+        if not request.user.is_superuser:
+            if not request.user.groups.filter(
+                name='Administrador'
+            ).exists():
+                return False
+        
+        return super().has_add_permission(request)
 
     def lookup_allowed(self, lookup, value, request=None):
         if request is not None and not request.user.is_superuser:
