@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Meu perfil | Hat Trick{% endblock %}
+
+{% block content %}
+
+<div class="login-container">
+
+    <div class="card account-card p-4">
+
+        <a href="{% url 'home' %}"
+        class="btn-voltar"
+        title="Voltar ao início"
+        aria-label="Voltar ao início">
+            &#8592;
+        </a>
+
+        <h2 class="text-green text-center mb-4">
+            Meu perfil
+        </h2>
+
+        {% for message in messages %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <p><strong>Usuário:</strong> {{ user.username }}</p>
+
+        <p><strong>Nome:</strong> {{ user.get_full_name|default:"Não informado" }}</p>
+
+        <p><strong>E-mail:</strong> {{ user.email|default:"Não informado" }}</p>
+
+        <p>
+            <strong>Tipo de conta:</strong>
+
+            {% if user.is_superuser %}
+                Superusuário
+            {% else %}
+                {% for grupo in user.groups.all %}
+                    {{ grupo.name }}
+                {% empty %}
+                    Usuário
+                {% endfor %}
+            {% endif %}
+        </p>
+
+        <hr>
+
+        <a href="{% url 'editarPerfil' %}"
+           class="btn btn-primary">
+            Editar perfil
+        </a>
+
+        <a href="{% url 'alterarSenha' %}"
+           class="btn btn-outline-light mt-3">
+            Alterar senha
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

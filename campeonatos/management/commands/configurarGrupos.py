@@ -62,6 +62,12 @@ class Command(BaseCommand):
             ]
         )
 
+                # Grupo Visitante
+        visitante, _ = Group.objects.get_or_create(
+            name='Visitante'
+        )
+
+        visitante.permissions.clear()
         administrador.permissions.set(permissoes)
         administrador.permissions.add(*permissoes_usuarios)
 

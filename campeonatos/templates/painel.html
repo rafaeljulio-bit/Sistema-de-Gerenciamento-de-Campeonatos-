@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciamento | Hat Trick{% endblock %}
+
+{% block content %}
+
+<div class="mb-5">
+
+    <h1 class="text-green">Painel de gerenciamento</h1>
+
+    <p>Gerencie as competições em um só lugar.</p>
+
+</div>
+
+<div class="row g-4 mb-5">
+
+    <div class="col-md-3 col-6">
+        <div class="card p-4 h-100">
+            <h2 class="text-green">{{ totalCampeonatos }}</h2>
+            <p class="mb-0">Campeonatos</p>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-6">
+        <div class="card p-4 h-100">
+            <h2 class="text-green">{{ totalEquipes }}</h2>
+            <p class="mb-0">Equipes</p>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-6">
+        <div class="card p-4 h-100">
+            <h2 class="text-green">{{ totalJogadores }}</h2>
+            <p class="mb-0">Jogadores</p>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-6">
+        <div class="card p-4 h-100">
+            <h2 class="text-green">{{ totalPartidas }}</h2>
+            <p class="mb-0">Partidas</p>
+        </div>
+    </div>
+
+</div>
+
+<h3 class="mb-4">Gerenciamento</h3>
+
+<div class="row g-3">
+
+    <div class="col-md-6">
+        <a href="{% url 'admin:campeonatos_campeonato_changelist' %}"
+           class="card menu-card p-4">
+            Campeonatos
+        </a>
+    </div>
+
+    <div class="col-md-6">
+        <a href="{% url 'admin:campeonatos_equipe_changelist' %}"
+           class="card menu-card p-4">
+            Equipes
+        </a>
+    </div>
+
+    <div class="col-md-6">
+        <a href="{% url 'admin:campeonatos_jogador_changelist' %}"
+           class="card menu-card p-4">
+            Jogadores
+        </a>
+    </div>
+
+    <div class="col-md-6">
+        <a href="{% url 'admin:campeonatos_jogadorequipe_changelist' %}"
+           class="card menu-card p-4">
+            Vínculos de jogadores
+        </a>
+    </div>
+
+    <div class="col-md-6">
+        <a href="{% url 'admin:campeonatos_inscricaoequipe_changelist' %}"
+           class="card menu-card p-4">
+            Inscrições de equipes
+        </a>
+    </div>
+
+    <div class="col-md-6">
+        <a href="{% url 'admin:campeonatos_inscricaojogador_changelist' %}"
+           class="card menu-card p-4">
+            Inscrições de jogadores
+        </a>
+    </div>
+
+    <div class="col-md-6">
+        <a href="{% url 'admin:campeonatos_partida_changelist' %}"
+           class="card menu-card p-4">
+            Partidas e resultados
+        </a>
+    </div>
+
+    <div class="col-md-6">
+        <a href="{% url 'admin:index' %}"
+           class="card menu-card p-4">
+            Cadastros gerais
+        </a>
+    </div>
+
+    {% if gerenciarUsuarios %}
+
+        <div class="col-md-6">
+            <a href="{% url 'admin:auth_user_changelist' %}"
+               class="card menu-card p-4">
+                Gerenciamento de usuários
+            </a>
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

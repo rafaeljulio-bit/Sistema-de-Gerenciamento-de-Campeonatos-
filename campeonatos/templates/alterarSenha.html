@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Alterar senha | Hat Trick{% endblock %}
+
+{% block content %}
+
+<div class="login-container">
+
+    <div class="card account-card p-4">
+
+        <a href="{% url 'perfil' %}"
+            class="btn-voltar"
+            title="Voltar ao perfil"
+            aria-label="Voltar ao perfil">
+            &#8592;
+        </a>
+
+        <h2 class="text-green text-center mb-4">
+            Alterar senha
+        </h2>
+
+        <form method="POST" class="account-form">
+
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <button type="submit"
+                    class="btn btn-primary w-100">
+                Alterar senha
+            </button>
+
+        </form>
+
+        <a href="{% url 'perfil' %}"
+           class="btn btn-outline-light mt-3">
+            Voltar
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}
