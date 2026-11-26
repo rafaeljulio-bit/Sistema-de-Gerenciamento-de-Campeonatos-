@@ -1,0 +1,53 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+
+<h1>Classificação - {{ campeonato.nome }}</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Posição</th>
+            <th>Equipe</th>
+            <th>PTS</th>
+            <th>J</th>
+            <th>V</th>
+            <th>E</th>
+            <th>D</th>
+            <th>GP</th>
+            <th>GC</th>
+            <th>SG</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for equipe in tabela %}
+        <tr>
+            <td>{{ equipe.posicao }}</td>
+            <td>{{ equipe.equipe.nome }}</td>
+            <td><strong>{{ equipe.pontos }}</strong></td>
+            <td>{{ equipe.jogos }}</td>
+            <td>{{ equipe.vitorias }}</td>
+            <td>{{ equipe.empates }}</td>
+            <td>{{ equipe.derrotas }}</td>
+            <td>{{ equipe.gols_pro }}</td>
+            <td>{{ equipe.gols_contra }}</td>
+            <td>{{ equipe.saldo_gols }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="10">
+                Nenhuma equipe inscrita e aprovada.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<br>
+
+<a class="button" href="{% url 'admin:campeonatos_campeonato_changelist' %}">
+    Voltar
+</a>
+
+{% endblock %}

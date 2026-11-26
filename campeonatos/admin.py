@@ -1,6 +1,12 @@
 from django.contrib import admin
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.admin import UserAdmin
+from django.urls import path, reverse
+from django.utils.html import format_html
+from django.template.response import TemplateResponse
+from django.core.exceptions import PermissionDenied
+from django.http import Http404
+from .services import calcular_classificacao
 from .models import (
 Cidade, 
 Modalidade,
@@ -16,7 +22,6 @@ Partida,
 admin.site.register(Cidade)
 admin.site.register(Modalidade)
 admin.site.register(Categoria)
-admin.site.register(Campeonato)
 admin.site.register(Equipe)
 admin.site.register(Jogador)
 admin.site.register(JogadorEquipe)
@@ -143,4 +148,67 @@ class UsuarioAdmin(UserAdmin):
 
         return super().lookup_allowed(
             lookup, value, request=request
+        )
+
+@admin.register(Campeonato)
+class CampeonatoAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'nome',
+        'modalidade',
+        'categoria',
+        'cidade',
+        'status',
+        'visualizar_classificacao',
+    )
+
+    @admin.display(description='Classificação')
+    def visualizar_classificacao(self, obj):
+        url = reverse(
+            'admin:campeonato_classificacao',
+            args=[obj.pk]
+        )
+
+        return format_html(
+            '<a class="button" href="{}">Visualizar classificação</a>',
+            url
+        )
+
+    def get_urls(self):
+        urls = super().get_urls()
+
+        novas_urls = [
+            path(
+                '<int:campeonato_id>/classificacao/',
+                self.admin_site.admin_view(self.classificacao),
+                name='campeonato_classificacao'
+            ),
+        ]
+
+        return novas_urls + urls
+    
+    def classificacao(self, request, campeonato_id):
+
+        campeonato = self.get_object(request, str(campeonato_id))
+
+        if campeonato is None:
+            raise Http404('Campeonato não encontrado.')
+        
+        if not self.has_view_or_change_permission(request, campeonato):
+            raise PermissionDenied
+
+        tabela = calcular_classificacao(campeonato)
+
+        contexto = {
+            **self.admin_site.each_context(request),
+            'title': f'Classificação - {campeonato.nome}',
+            'campeonato': campeonato,
+            'tabela': tabela,
+            'opts': self.model._meta,
+        }
+
+        return TemplateResponse(
+            request,
+            'classificacao.html',
+            contexto
         )
