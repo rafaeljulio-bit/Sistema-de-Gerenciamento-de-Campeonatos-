@@ -416,3 +416,113 @@ footer p {
     justify-content: center;
     font-size: 65px;
 }
+
+/* Detalhes do campeonato */
+
+.logoDetalhesCampeonato {
+    width: 180px;
+    height: 180px;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.trofeuDetalhes {
+    font-size: 90px;
+}
+
+/* Equipes participantes */
+
+.escudoEquipe {
+    width: 90px;
+    height: 90px;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.iconeEquipe {
+    width: 90px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 55px;
+}
+
+.equipeCard {
+    transition: 0.2s;
+}
+
+.equipeCard:hover {
+    border-color: var(--primary);
+    transform: translateY(-3px);
+}
+
+/* Partidas e resultados */
+
+.partidaCard {
+    transition: 0.2s;
+}
+
+.partidaCard:hover {
+    border-color: var(--primary);
+}
+
+.escudoPartida {
+    width: 75px;
+    height: 75px;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.iconePartida {
+    height: 75px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 45px;
+}
+
+.nomeEquipePartida {
+    font-size: 14px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+    margin-bottom: 0;
+}
+
+.placarPartida {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.dataPartida,
+.detalhesPartida {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.status-agendada,
+.status-adiada {
+    background-color: rgba(255, 193, 7, 0.12);
+    color: #FFC107;
+}
+
+.status-realizada {
+    background-color: rgba(82, 255, 0, 0.12);
+    color: var(--primary);
+}
+
+.status-cancelada {
+    background-color: rgba(220, 53, 69, 0.12);
+    color: #FF6B6B;
+}
+
+#partidas {
+    scroll-margin-top: 100px;
+}
+
+.account-form input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}

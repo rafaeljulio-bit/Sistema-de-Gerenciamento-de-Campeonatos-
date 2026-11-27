@@ -27,6 +27,12 @@
                 Consulte os campeonatos e acompanhe
                 as competições.
             </p>
+
+         <a href="{% url 'listarCampeonatos' %}"
+            class="btn btn-primary mt-auto">
+            Ver campeonatos
+        </a>
+
         </div>
     </div>
 
@@ -37,6 +43,12 @@
                 Acompanhe os próximos confrontos
                 e os resultados.
             </p>
+
+           <a href="{% url 'partidasPublicas' %}"
+           class="btn btn-primary mt-auto">
+            Ver partidas
+        </a>
+
         </div>
     </div>
 
@@ -45,7 +57,7 @@
             <h3 class="text-green">Classificação</h3>
             
             <p>Acompanhe a classificação das equipes.</p>
-            
+
             <a href="{% url 'classificacaoPublica' %}"
                 class="btn btn-primary mt-auto">
                 Ver classificação
@@ -53,6 +65,8 @@
 
         </div>
     </div>
+
+     
 
 </div>
 

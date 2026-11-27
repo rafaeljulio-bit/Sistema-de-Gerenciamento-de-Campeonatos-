@@ -20,8 +20,9 @@
         </h2>
 
         <form method="POST"
-              enctype="multipart/form-data"
-              class="account-form">
+                enctype="multipart/form-data"
+                class="account-form"
+                onsubmit="this.querySelector('button[type=submit]').disabled = true;">
 
             {% csrf_token %}
 

@@ -176,3 +176,43 @@ class PartidaForm(forms.ModelForm):
                 attrs={'type': 'time'}
             ),
         }
+
+class CadastroOrganizadorForm(UserCreationForm):
+
+    class Meta:
+        model = User
+        fields = [
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+            'password1',
+            'password2',
+        ]
+
+    def __init__(self, *args, permitirAdministrador=False, **kwargs):
+
+        super().__init__(*args, **kwargs)
+
+        if permitirAdministrador:
+
+            self.fields['tipoConta'] = forms.ChoiceField(
+                label='Tipo de conta',
+                choices=[
+                    ('Organizador', 'Organizador'),
+                    ('Administrador', 'Administrador'),
+                ]
+            )
+
+
+class EditarOrganizadorForm(forms.ModelForm):
+
+    class Meta:
+        model = User
+        fields = [
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+            'is_active',
+        ]

@@ -61,4 +61,40 @@ urlpatterns = [
     views.classificacaoPublica,
     name='classificacaoPublica'
     ),
+
+    path(
+    'campeonatos/',
+    views.listarCampeonatos,
+    name='listarCampeonatos'
+),
+
+path(
+    'campeonatos/<int:pk>/',
+    views.detalhesCampeonato,
+    name='detalhesCampeonato'
+),
+
+path(
+    'partidas/',
+    views.partidasPublicas,
+    name='partidasPublicas'
+),
+
+path(
+    'usuarios/',
+    views.listarUsuarios,
+    name='listarUsuarios'
+),
+
+path(
+    'usuarios/adicionar/',
+    views.adicionarUsuario,
+    name='adicionarUsuario'
+),
+
+path(
+    'usuarios/<int:pk>/editar/',
+    views.editarUsuario,
+    name='editarUsuario'
+),
 ]

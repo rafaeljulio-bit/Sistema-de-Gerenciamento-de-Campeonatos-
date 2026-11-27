@@ -15,6 +15,13 @@ from .forms import CampeonatoForm, EquipeForm, JogadorForm
 from .models import JogadorEquipe, InscricaoEquipe, InscricaoJogador
 from .forms import PartidaForm
 from .services import calcular_classificacao
+from .services import separar_partidas
+from django.contrib.auth.models import User, Group
+from django.db.models import Q
+from .forms import (
+    CadastroOrganizadorForm,
+    EditarOrganizadorForm,
+)
 from .forms import (
     JogadorEquipeForm,
     InscricaoEquipeForm,
@@ -349,3 +356,219 @@ def classificacaoPublica(request):
         'campeonato': campeonato,
         'classificacao': classificacao,
     })
+
+def listarCampeonatos(request):
+
+    campeonatos = Campeonato.objects.all().order_by('id')
+
+    return render(request, 'listarCampeonatos.html', {
+        'campeonatos': campeonatos,
+    })
+
+
+def detalhesCampeonato(request, pk):
+
+    campeonato = get_object_or_404(Campeonato, pk=pk)
+
+    equipes = InscricaoEquipe.objects.filter(
+        campeonato=campeonato,
+        status='aprovada'
+    ).select_related('equipe').order_by('id')
+
+    return render(request, 'detalhesCampeonato.html', {
+        'campeonato': campeonato,
+        'equipes': equipes,
+        'totalEquipes': equipes.count(),
+    })  
+
+def partidasPublicas(request):
+
+    campeonatos = Campeonato.objects.all().order_by('id')
+
+    campeonato = None
+    partidas = []
+
+    campeonatoId = request.GET.get('campeonato')
+    situacao = request.GET.get('situacao', 'proximas')
+
+    situacoes = {
+        'proximas': 'Próximas partidas',
+        'realizadas': 'Resultados anteriores',
+        'pendentes': 'Partidas pendentes',
+        'adiadas': 'Partidas adiadas',
+        'canceladas': 'Partidas canceladas',
+    }
+
+    if situacao not in situacoes:
+        situacao = 'proximas'
+
+    if campeonatoId:
+
+        if not campeonatoId.isdecimal():
+            raise Http404
+
+        campeonato = get_object_or_404(
+            campeonatos,
+            pk=campeonatoId
+        )
+
+        partidas = separar_partidas(campeonato)[situacao]
+
+    return render(request, 'partidasPublicas.html', {
+        'campeonatos': campeonatos,
+        'campeonato': campeonato,
+        'partidas': partidas,
+        'situacao': situacao,
+        'situacoes': situacoes,
+        'tituloSituacao': situacoes[situacao],
+    })
+
+def verificarGerenciamentoUsuarios(request, acao):
+
+    usuario = request.user
+
+    if not usuario.is_active or not usuario.is_staff:
+        raise PermissionDenied
+
+    if not usuario.is_superuser:
+        if not usuario.groups.filter(
+            name='Administrador'
+        ).exists():
+            raise PermissionDenied
+
+    if not usuario.has_perm(f'auth.{acao}_user'):
+        raise PermissionDenied
+
+
+def consultarOrganizadores():
+
+    return User.objects.filter(
+        groups__name='Organizador',
+        is_staff=True,
+        is_superuser=False,
+        user_permissions__isnull=True
+    ).exclude(
+        groups__in=Group.objects.exclude(name='Organizador')
+    ).distinct().order_by('id')
+
+
+@login_required(login_url='login')
+def listarUsuarios(request):
+
+    verificarGerenciamentoUsuarios(request, 'view')
+
+    usuarios = consultarUsuariosGerenciaveis(
+        request.user
+    ).prefetch_related('groups')
+
+    for usuario in usuarios:
+
+        usuario.tipoConta = ', '.join(
+            grupo.name for grupo in usuario.groups.all()
+        )
+
+    return render(request, 'listarUsuarios.html', {
+        'usuarios': usuarios,
+    })
+
+
+@login_required(login_url='login')
+def adicionarUsuario(request):
+
+    verificarGerenciamentoUsuarios(request, 'add')
+
+    if request.method == 'POST':
+
+        form = CadastroOrganizadorForm(
+            request.POST,
+            permitirAdministrador=request.user.is_superuser
+        )
+
+        if form.is_valid():
+
+            with transaction.atomic():
+
+                usuario = form.save(commit=False)
+                usuario.is_staff = True
+                usuario.is_superuser = False
+                usuario.save()
+
+                tipoConta = 'Organizador'
+
+                if request.user.is_superuser:
+                    tipoConta = form.cleaned_data['tipoConta']
+
+                grupo = Group.objects.get(name=tipoConta)
+                usuario.groups.add(grupo)
+
+            messages.success(
+                request,
+                'Usuário cadastrado com sucesso!'
+            )
+
+            return redirect('listarUsuarios')
+
+    else:
+
+        form = CadastroOrganizadorForm(
+            permitirAdministrador=request.user.is_superuser
+        )
+
+    return render(request, 'formUsuario.html', {
+        'form': form,
+        'titulo': 'Cadastrar usuário',
+    })
+
+
+@login_required(login_url='login')
+def editarUsuario(request, pk):
+
+    verificarGerenciamentoUsuarios(request, 'change')
+
+    usuario = get_object_or_404(
+        consultarUsuariosGerenciaveis(request.user),
+        pk=pk
+    )
+
+    if request.method == 'POST':
+
+        form = EditarOrganizadorForm(
+            request.POST,
+            instance=usuario
+        )
+
+        if form.is_valid():
+
+            form.save()
+
+            messages.success(
+                request,
+                'Organizador atualizado com sucesso!'
+            )
+
+            return redirect('listarUsuarios')
+
+    else:
+        form = EditarOrganizadorForm(instance=usuario)
+
+    return render(request, 'formUsuario.html', {
+        'form': form,
+        'titulo': 'Editar usuário',
+    })
+
+def consultarUsuariosGerenciaveis(usuario):
+
+    organizadores = consultarOrganizadores()
+
+    filtro = Q(pk__in=organizadores.values('pk'))
+
+    if usuario.is_superuser:
+
+        filtro |= Q(
+            groups__name='Administrador',
+            is_superuser=False
+        )
+
+    return User.objects.filter(
+        filtro
+    ).distinct().order_by('id')

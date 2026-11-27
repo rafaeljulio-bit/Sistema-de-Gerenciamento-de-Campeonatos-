@@ -428,6 +428,20 @@ class Partida(models.Model):
         verbose_name = 'Partida'
         verbose_name_plural = 'Partidas'
 
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    'campeonato',
+                    'equipe_mandante',
+                    'equipe_visitante',
+                    'data',
+                    'horario',
+                ],
+                name='unique_partida_campeonato',
+                violation_error_message='Esta partida já está cadastrada neste campeonato.'
+            )
+        ]
+
     def clean(self):
         super().clean()
 

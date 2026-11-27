@@ -336,6 +336,16 @@ class ClassificacaoConsultaTest(CampeonatoBaseTest):
 
         self.assertEqual(tabela[0]['equipe'], self.equipe2)
 
+    def test_impedir_partida_duplicada(self):
+
+        self.criar_partida(status='agendada')
+
+        with self.assertRaisesMessage(
+            ValidationError,
+            'Esta partida já está cadastrada neste campeonato.'
+        ):
+            self.criar_partida(status='agendada')
+
     def test_classificacao_com_vitoria(self):
         self.criar_partida(
             status='realizada',
@@ -389,9 +399,9 @@ class ClassificacaoConsultaTest(CampeonatoBaseTest):
         self.assertEqual(tabela[0]['pontos'], 3)
 
     def test_ignorar_partidas_nao_realizadas(self):
-        self.criar_partida(status='agendada')
-        self.criar_partida(status='adiada')
-        self.criar_partida(status='cancelada')
+        self.criar_partida(status='agendada', horario=time(18, 0))
+        self.criar_partida(status='adiada', horario=time(19, 0))
+        self.criar_partida(status='cancelada', horario=time(20, 0))
 
         tabela = calcular_classificacao(self.campeonato)
 
@@ -444,8 +454,8 @@ class ClassificacaoConsultaTest(CampeonatoBaseTest):
             horario=time(10, 0)
         )
 
-        self.criar_partida(status='adiada')
-        self.criar_partida(status='cancelada')
+        self.criar_partida(status='adiada', horario=time(19, 30))
+        self.criar_partida(status='cancelada', horario=time(20, 30))
 
         agora = timezone.make_aware(
             datetime(2026, 6, 10, 12, 0)

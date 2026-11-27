@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Campeonatos | Hat Trick{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'home' %}"
+   class="btn btn-outline-light mb-4">
+    &#8592; Voltar
+</a>
+
+<h1 class="text-green mb-3">Campeonatos</h1>
+
+<p class="mb-4">
+    Conheça os campeonatos e acompanhe suas competições.
+</p>
+
+<div class="row g-3 mb-5">
+
+    {% for item in campeonatos %}
+
+        <div class="col-lg-4 col-md-6">
+
+            <a href="{% url 'detalhesCampeonato' item.pk %}"
+               class="card campeonatoCard p-4 h-100">
+
+                <div class="d-flex justify-content-center mb-3">
+
+                    {% if item.logo %}
+
+                        <img src="{{ item.logo.url }}"
+                             class="logoCampeonato"
+                             alt="Logo de {{ item.nome }}">
+
+                    {% else %}
+
+                        <span class="iconeCampeonato">
+                            &#127942;
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+                <div class="mb-3">
+
+                    <span class="statusCampeonato status-{{ item.status }}">
+                        {{ item.get_status_display }}
+                    </span>
+
+                </div>
+
+                <h4 class="text-green">
+                    {{ item.nome }}
+                </h4>
+
+                <p class="mb-1">
+                    {{ item.modalidade }} | {{ item.categoria }}
+                </p>
+
+                <p class="cidadeCampeonato mb-3">
+                    {{ item.cidade }}
+                </p>
+
+                <hr>
+
+                <div class="d-flex justify-content-between align-items-center mt-auto">
+
+                    <span>Ver campeonato</span>
+                    <span>&#8594;</span>
+
+                </div>
+
+            </a>
+
+        </div>
+
+    {% empty %}
+
+        <div class="card p-4 text-center">
+            Nenhum campeonato cadastrado.
+        </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}
