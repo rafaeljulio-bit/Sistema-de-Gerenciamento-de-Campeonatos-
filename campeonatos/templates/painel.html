@@ -49,60 +49,81 @@
 <div class="row g-3">
 
     <div class="col-md-6">
-        <a href="{% url 'admin:campeonatos_campeonato_changelist' %}"
-           class="card menu-card p-4">
+        <a href="{% url 'listarCadastro' 'campeonatos' %}"
+            class="card menu-card p-4">
             Campeonatos
         </a>
     </div>
 
     <div class="col-md-6">
-        <a href="{% url 'admin:campeonatos_equipe_changelist' %}"
-           class="card menu-card p-4">
+        <a href="{% url 'listarCadastro' 'equipes' %}"
+            class="card menu-card p-4">
             Equipes
         </a>
     </div>
 
     <div class="col-md-6">
-        <a href="{% url 'admin:campeonatos_jogador_changelist' %}"
-           class="card menu-card p-4">
+        <a href="{% url 'listarCadastro' 'jogadores' %}"
+            class="card menu-card p-4">
             Jogadores
         </a>
     </div>
 
     <div class="col-md-6">
-        <a href="{% url 'admin:campeonatos_jogadorequipe_changelist' %}"
+        <a href="{% url 'listarCadastro' 'vinculosJogadores' %}"
            class="card menu-card p-4">
             Vínculos de jogadores
         </a>
     </div>
 
     <div class="col-md-6">
-        <a href="{% url 'admin:campeonatos_inscricaoequipe_changelist' %}"
-           class="card menu-card p-4">
+        <a href="{% url 'listarCadastro' 'inscricoesEquipes' %}"
+            class="card menu-card p-4">
             Inscrições de equipes
         </a>
     </div>
 
     <div class="col-md-6">
-        <a href="{% url 'admin:campeonatos_inscricaojogador_changelist' %}"
-           class="card menu-card p-4">
+        <a href="{% url 'listarCadastro' 'inscricoesJogadores' %}"
+            class="card menu-card p-4">
             Inscrições de jogadores
         </a>
     </div>
 
     <div class="col-md-6">
-        <a href="{% url 'admin:campeonatos_partida_changelist' %}"
-           class="card menu-card p-4">
+        <a href="{% url 'listarCadastro' 'partidas' %}"
+            class="card menu-card p-4">
             Partidas e resultados
         </a>
     </div>
 
     <div class="col-md-6">
-        <a href="{% url 'admin:index' %}"
-           class="card menu-card p-4">
-            Cadastros gerais
+        <a href="{% url 'classificacaoPublica' %}"
+            class="card menu-card p-4">
+            Classificação
         </a>
     </div>
+
+        <div class="col-md-6">
+            <a href="{% url 'listarCadastro' 'cidades' %}"
+            class="card menu-card p-4">
+                Cidades
+            </a>
+        </div>
+
+        <div class="col-md-6">
+            <a href="{% url 'listarCadastro' 'modalidades' %}"
+            class="card menu-card p-4">
+                Modalidades
+            </a>
+        </div>
+
+        <div class="col-md-6">
+            <a href="{% url 'listarCadastro' 'categorias' %}"
+            class="card menu-card p-4">
+                Categorias
+            </a>
+        </div>
 
     {% if gerenciarUsuarios %}
 

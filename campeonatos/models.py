@@ -44,6 +44,12 @@ class Campeonato(models.Model):
         related_name='campeonatos'
     )
 
+    logo = models.ImageField(
+        upload_to='campeonatos/',
+        blank=True,
+        null=True
+    )
+
     categoria = models.ForeignKey(
             Categoria,
             on_delete=models.PROTECT,
@@ -221,7 +227,8 @@ class InscricaoEquipe(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['equipe', 'campeonato'],
-                name='equipe_campeonato_unicos'
+                name='unique_equipe_campeonato',
+                violation_error_message='Esta equipe já está inscrita neste campeonato.'
             )
         ]
 
@@ -289,7 +296,8 @@ class InscricaoJogador(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['jogador_equipe', 'inscricao_equipe'],
-                name='vinculo_inscricao_unicos'
+                name='vinculo_inscricao_unicos',
+                violation_error_message='Este jogador já está inscrito nesta equipe para este campeonato.'
             )
         ]
 
@@ -330,15 +338,35 @@ class InscricaoJogador(models.Model):
             raise ValidationError('O jogador não é elegível para a categoria do campeonato.'
             )
         
-        duplicado = InscricaoJogador.objects.filter(
+        InscricaoJogador.objects.filter(
             inscricao_equipe__campeonato=campeonato,
             jogador_equipe__jogador=vinculo.jogador
         ).exclude(pk=self.pk)
 
-        if duplicado.exists():
-            raise ValidationError(
-                'Este jogador já está inscrito em outra equipe neste campeonato.'
-        )
+        if self.jogador_equipe_id and self.inscricao_equipe_id:
+
+            inscricoes = InscricaoJogador.objects.filter(
+                jogador_equipe__jogador=self.jogador_equipe.jogador,
+                inscricao_equipe__campeonato=self.inscricao_equipe.campeonato
+            ).exclude(pk=self.pk)
+
+            if inscricoes.exclude(
+                inscricao_equipe__equipe=self.inscricao_equipe.equipe
+            ).exists():
+
+                raise ValidationError(
+                    'Este jogador já está inscrito em outra equipe neste campeonato.'
+                )
+
+            if inscricoes.filter(
+                inscricao_equipe=self.inscricao_equipe
+            ).exclude(
+                jogador_equipe=self.jogador_equipe
+            ).exists():
+
+                raise ValidationError(
+                    'Este jogador já está inscrito nesta equipe para este campeonato.'
+                )
 
     def save(self, *args, **kwargs):
             self.full_clean()
@@ -484,6 +512,6 @@ class Partida(models.Model):
         
     def __str__(self):
         return (
-            f'{self.equipe_mandante.equipe} x'
+            f'{self.equipe_mandante.equipe} X '
             f'{self.equipe_visitante.equipe}'
         )

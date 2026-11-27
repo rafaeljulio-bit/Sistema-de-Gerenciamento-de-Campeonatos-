@@ -244,3 +244,175 @@ footer p {
     transform: translateY(-3px);
     box-shadow: 0 4px 15px rgba(82, 255, 0, 0.08);
 }
+
+/* Cadastros */
+
+.table-dark {
+    --bs-table-bg: var(--surface);
+    --bs-table-color: var(--text);
+    --bs-table-border-color: var(--border);
+    --bs-table-hover-bg: #263442;
+}
+
+.table th {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.table td,
+.table th {
+    padding: 14px;
+}
+
+.account-form select,
+.account-form textarea {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: var(--background);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.account-form select:focus,
+.account-form textarea:focus {
+    border-color: var(--primary);
+    outline: none;
+}
+
+.tituloCadastro {
+    padding: 0 40px;
+}
+
+.account-form input[type="date"],
+.account-form input[type="time"] {
+    color-scheme: dark;
+}
+
+.account-form input[type="file"] {
+    cursor: pointer;
+}
+
+.account-form input::file-selector-button {
+    background-color: var(--primary);
+    color: var(--background);
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    margin-right: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Classificação */
+
+.tabelaClassificacao th,
+.tabelaClassificacao td {
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.tabelaClassificacao th:nth-child(2),
+.tabelaClassificacao td:nth-child(2) {
+    text-align: left;
+}
+
+.escudoClassificacao {
+    width: 35px;
+    height: 35px;
+    object-fit: contain;
+}
+
+.tabelaClassificacao .pontosClassificacao {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.legendaClassificacao {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+/* Cards de campeonatos */
+
+.campeonatoCard {
+    text-decoration: none;
+    color: var(--text);
+    transition: 0.2s;
+}
+
+.campeonatoCard:hover {
+    color: var(--text);
+    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: 0 4px 15px rgba(82, 255, 0, 0.08);
+}
+
+.campeonatoCard:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+.campeonatoSelecionado {
+    border: 2px solid var(--primary);
+    background-color: #202F26;
+}
+
+.iconeCampeonato {
+    font-size: 30px;
+}
+
+.cidadeCampeonato {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.statusCampeonato {
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-planejado {
+    background-color: rgba(255, 193, 7, 0.12);
+    color: #FFC107;
+}
+
+.status-andamento {
+    background-color: rgba(82, 255, 0, 0.12);
+    color: var(--primary);
+}
+
+.status-finalizado {
+    background-color: rgba(13, 202, 240, 0.12);
+    color: #0DCAF0;
+}
+
+.status-cancelado {
+    background-color: rgba(220, 53, 69, 0.12);
+    color: #FF6B6B;
+}
+
+#classificacao {
+    scroll-margin-top: 100px;
+}
+
+/* Logo dos campeonatos */
+
+.logoCampeonato {
+    width: 140px;
+    height: 140px;
+    object-fit: contain;
+}
+
+.iconeCampeonato {
+    width: 140px;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 65px;
+}

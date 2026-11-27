@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}Classificação | Hat Trick{% endblock %}
+
+{% block content %}
+
+<a href="{% url 'home' %}"
+   class="btn btn-outline-light mb-4">
+    &#8592; Voltar
+</a>
+
+<h1 class="text-green mb-4">Classificação</h1>
+
+<p class="mb-4">
+    Selecione um campeonato para acompanhar a classificação.
+</p>
+
+<div class="row g-3 mb-5">
+
+    {% for item in campeonatos %}
+
+        <div class="col-lg-4 col-md-6">
+
+            <a href="?campeonato={{ item.pk }}#classificacao"
+               class="card campeonatoCard p-4 h-100
+               {% if campeonato.pk == item.pk %}campeonatoSelecionado{% endif %}">
+
+                <div class="d-flex justify-content-center mb-3">
+
+                    {% if item.logo %}
+
+                        <img src="{{ item.logo.url }}"
+                             class="logoCampeonato"
+                             alt="Logo de {{ item.nome }}">
+
+                    {% else %}
+
+                        <span class="iconeCampeonato">
+                            &#127942;
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+                <div class="mb-3">
+
+                    <span class="statusCampeonato status-{{ item.status }}">
+                        {{ item.get_status_display }}
+                    </span>
+
+                </div>
+
+                <h4 class="text-green">
+                    {{ item.nome }}
+                </h4>
+
+                <p class="mb-1">
+                    {{ item.modalidade }} | {{ item.categoria }}
+                </p>
+
+                <p class="cidadeCampeonato mb-3">
+                    {{ item.cidade }}
+                </p>
+
+                <hr>
+
+                <div class="d-flex justify-content-between align-items-center mt-auto">
+
+                    {% if campeonato.pk == item.pk %}
+
+                        <span>Selecionado &#10003;</span>
+
+                    {% else %}
+
+                        <span>Ver classificação</span>
+                        <span>&#8594;</span>
+
+                    {% endif %}
+
+                </div>
+
+            </a>
+
+        </div>
+
+    {% empty %}
+
+        <p>Nenhum campeonato cadastrado.</p>
+
+    {% endfor %}
+
+</div>
+
+{% if campeonato %}
+
+    <h2 id="classificacao" class="text-green mb-4">
+        {{ campeonato.nome }}
+    </h2>
+
+    <div class="card p-3">
+
+        <div class="table-responsive">
+
+            <table class="table table-dark table-hover align-middle mb-0 tabelaClassificacao">
+
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Equipe</th>
+                        <th>PTS</th>
+                        <th>J</th>
+                        <th>V</th>
+                        <th>E</th>
+                        <th>D</th>
+                        <th>GP</th>
+                        <th>GC</th>
+                        <th>SG</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for linha in classificacao %}
+
+                        <tr>
+
+                            <td>{{ linha.posicao }}</td>
+
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+
+                                    {% if linha.equipe.escudo %}
+
+                                        <img src="{{ linha.equipe.escudo.url }}"
+                                             class="escudoClassificacao"
+                                             alt="">
+
+                                    {% endif %}
+
+                                    {{ linha.equipe.nome }}
+
+                                </div>
+                            </td>
+
+                            <td class="pontosClassificacao">
+                                {{ linha.pontos }}
+                            </td>
+
+                            <td>{{ linha.jogos }}</td>
+                            <td>{{ linha.vitorias }}</td>
+                            <td>{{ linha.empates }}</td>
+                            <td>{{ linha.derrotas }}</td>
+                            <td>{{ linha.gols_pro }}</td>
+                            <td>{{ linha.gols_contra }}</td>
+                            <td>{{ linha.saldo_gols }}</td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+                            <td colspan="10"
+                                class="text-center p-4">
+
+                                Nenhuma equipe inscrita e aprovada neste campeonato.
+
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <div class="legendaClassificacao mt-3">
+
+        <strong>PTS:</strong> Pontos |
+        <strong>J:</strong> Jogos |
+        <strong>V:</strong> Vitórias |
+        <strong>E:</strong> Empates |
+        <strong>D:</strong> Derrotas |
+        <strong>GP:</strong> Gols pró |
+        <strong>GC:</strong> Gols contra |
+        <strong>SG:</strong> Saldo de gols
+
+    </div>
+
+{% else %}
+
+    <div class="card p-4 text-center">
+
+        Selecione um campeonato para visualizar a classificação.
+
+    </div>
+
+{% endif %}
+
+{% endblock %}

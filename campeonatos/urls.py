@@ -31,4 +31,34 @@ urlpatterns = [
 
     path('perfil/editar/', views.editarPerfil, name='editarPerfil'),
     path('painel/', views.painel, name='painel'),
+
+        path(
+        'gerenciamento/<str:tipo>/',
+        views.listarCadastro,
+        name='listarCadastro'
+    ),
+
+    path(
+        'gerenciamento/<str:tipo>/adicionar/',
+        views.adicionarCadastro,
+        name='adicionarCadastro'
+    ),
+
+    path(
+        'gerenciamento/<str:tipo>/<int:pk>/editar/',
+        views.editarCadastro,
+        name='editarCadastro'
+    ),
+
+    path(
+        'gerenciamento/<str:tipo>/<int:pk>/excluir/',
+        views.excluirCadastro,
+        name='excluirCadastro'
+    ),
+
+    path(
+    'classificacao/',
+    views.classificacaoPublica,
+    name='classificacaoPublica'
+    ),
 ]
