@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-
+from django.db.models import Sum
 class Modalidade(models.Model):
     nome = models.CharField(max_length=50, unique=True)
     descricao = models.TextField(blank=True)
@@ -368,6 +368,24 @@ class InscricaoJogador(models.Model):
                     'Este jogador já está inscrito nesta equipe para este campeonato.'
                 )
 
+            if self.pk:
+
+                if EstatisticaPartida.objects.filter(
+                    inscricao_jogador_id=self.pk
+                ).exists():
+
+                    inscricaoOriginal = InscricaoJogador.objects.get(pk=self.pk)
+
+                    if (
+                        self.jogador_equipe_id != inscricaoOriginal.jogador_equipe_id
+                        or self.inscricao_equipe_id != inscricaoOriginal.inscricao_equipe_id
+                    ):
+
+                        raise ValidationError(
+                            'Não é possível alterar uma inscrição que possui '
+                            'estatísticas cadastradas.'
+                        )
+
     def save(self, *args, **kwargs):
             self.full_clean()
             super().save(*args,**kwargs)
@@ -502,6 +520,53 @@ class Partida(models.Model):
                 raise ValidationError(
                     'Somente partidas realizadas podem possuir placar.'
                 )
+        if self.pk:
+
+            estatisticas = EstatisticaPartida.objects.filter(
+                partida_id=self.pk
+            )
+
+            if estatisticas.exists():
+
+                if self.status != 'realizada':
+
+                    raise ValidationError(
+                        'Esta partida possui estatísticas de jogadores cadastradas.'
+                    )
+
+            partidaOriginal = Partida.objects.get(pk=self.pk)
+
+            if (
+                self.campeonato_id != partidaOriginal.campeonato_id
+                or self.equipe_mandante_id != partidaOriginal.equipe_mandante_id
+                or self.equipe_visitante_id != partidaOriginal.equipe_visitante_id
+            ):
+
+                raise ValidationError(
+                    'Não é possível alterar as equipes ou o campeonato '
+                    'de uma partida que possui estatísticas.'
+                )
+
+            for equipeId, placar in [
+                (self.equipe_mandante_id, self.gols_mandante),
+                (self.equipe_visitante_id, self.gols_visitante)
+            ]:
+
+                totais = estatisticas.filter(
+                    inscricao_jogador__inscricao_equipe_id=equipeId
+                ).aggregate(
+                    totalGols=Sum('gols'),
+                    totalAssistencias=Sum('assistencias')
+                )
+
+                if placar is None or (
+                    (totais['totalGols'] or 0) > placar
+                    or (totais['totalAssistencias'] or 0) > placar
+                ):
+
+                    raise ValidationError(
+                        'O placar é incompatível com as estatísticas cadastradas.'
+                    )
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -529,3 +594,121 @@ class Partida(models.Model):
             f'{self.equipe_mandante.equipe} X '
             f'{self.equipe_visitante.equipe}'
         )
+
+class EstatisticaPartida(models.Model):
+
+    partida = models.ForeignKey(
+        Partida,
+        on_delete=models.PROTECT
+    )
+
+    inscricao_jogador = models.ForeignKey(
+        InscricaoJogador,
+        on_delete=models.PROTECT
+    )
+
+    gols = models.PositiveIntegerField(default=0)
+
+    assistencias = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Assistências'
+    )
+
+    class Meta:
+
+        verbose_name = 'Estatística da partida'
+        verbose_name_plural = 'Estatísticas das partidas'
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['partida', 'inscricao_jogador'],
+                name='unique_estatistica_partida_jogador',
+                violation_error_message=(
+                    'Este jogador já possui estatísticas nesta partida.'
+                )
+            )
+        ]
+
+    def __str__(self):
+
+        jogador = self.inscricao_jogador.jogador_equipe.jogador
+
+        return (
+            f'{jogador} - {self.partida} | '
+            f'Gols: {self.gols} | '
+            f'Assistências: {self.assistencias}'
+        )
+
+    def clean(self):
+
+        super().clean()
+
+        if not self.partida_id or not self.inscricao_jogador_id:
+            return
+
+        partida = self.partida
+        inscricao = self.inscricao_jogador
+        equipe = inscricao.inscricao_equipe
+
+        if partida.status != 'realizada':
+
+            raise ValidationError(
+                'Somente partidas realizadas podem receber estatísticas.'
+            )
+
+        if equipe.pk not in [
+            partida.equipe_mandante_id,
+            partida.equipe_visitante_id
+        ]:
+
+            raise ValidationError(
+                'Este jogador não pertence a uma das equipes da partida.'
+            )
+
+        if self.gols is None or self.assistencias is None:
+            return
+
+        if equipe.pk == partida.equipe_mandante_id:
+            limiteGols = partida.gols_mandante
+        else:
+            limiteGols = partida.gols_visitante
+
+        totais = EstatisticaPartida.objects.filter(
+            partida=partida,
+            inscricao_jogador__inscricao_equipe=equipe
+        ).exclude(pk=self.pk).aggregate(
+            totalGols=Sum('gols'),
+            totalAssistencias=Sum('assistencias')
+        )
+
+        totalGols = (totais['totalGols'] or 0) + self.gols
+
+        totalAssistencias = (
+            (totais['totalAssistencias'] or 0) + self.assistencias
+        )
+
+        if limiteGols is None:
+
+            raise ValidationError(
+                'A partida precisa possuir um placar registrado.'
+            )
+
+        if totalGols > limiteGols:
+
+            raise ValidationError(
+                'A soma dos gols dos jogadores não pode ultrapassar '
+                'o placar da equipe.'
+            )
+
+        if totalAssistencias > limiteGols:
+
+            raise ValidationError(
+                'A soma das assistências não pode ultrapassar '
+                'a quantidade de gols da equipe.'
+            )
+
+    def save(self, *args, **kwargs):
+
+        self.full_clean()
+
+        super().save(*args, **kwargs)

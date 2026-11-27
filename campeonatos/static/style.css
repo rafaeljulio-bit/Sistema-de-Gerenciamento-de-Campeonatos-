@@ -526,3 +526,15 @@ footer p {
     accent-color: var(--primary);
     cursor: pointer;
 }
+
+/* Estatísticas dos jogadores */
+
+.autoresGols {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.table .destaqueEstatistica {
+    color: var(--primary);
+    font-weight: 700;
+}

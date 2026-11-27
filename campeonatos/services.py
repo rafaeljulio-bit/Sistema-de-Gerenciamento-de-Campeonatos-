@@ -1,6 +1,8 @@
 from.models import InscricaoEquipe, Partida
 from django.utils import timezone
 from django.db.models import Q
+from django.db.models import F, Sum
+from .models import EstatisticaPartida
 
 def calcular_classificacao(campeonato):
 
@@ -145,4 +147,48 @@ def separar_partidas(campeonato):
         'pendentes': pendentes,
         'adiadas': adiadas,
         'canceladas':canceladas,
+    }
+
+def calcularEstatisticasJogadores(campeonato):
+
+    estatisticas = EstatisticaPartida.objects.filter(
+        partida__campeonato=campeonato,
+        partida__status='realizada'
+    ).values(
+        jogadorId=F(
+            'inscricao_jogador__jogador_equipe__jogador_id'
+        ),
+        jogador=F(
+            'inscricao_jogador__jogador_equipe__jogador__nome'
+        ),
+        equipeId=F(
+            'inscricao_jogador__inscricao_equipe__equipe_id'
+        ),
+        equipe=F(
+            'inscricao_jogador__inscricao_equipe__equipe__nome'
+        )
+    ).annotate(
+        totalGols=Sum('gols'),
+        totalAssistencias=Sum('assistencias')
+    )
+
+    artilharia = estatisticas.filter(
+        totalGols__gt=0
+    ).order_by(
+        '-totalGols',
+        'jogador',
+        'jogadorId'
+    )
+
+    assistencias = estatisticas.filter(
+        totalAssistencias__gt=0
+    ).order_by(
+        '-totalAssistencias',
+        'jogador',
+        'jogadorId'
+    )
+
+    return {
+        'artilharia': artilharia,
+        'rankingAssistencias': assistencias,
     }

@@ -20,6 +20,7 @@ class Command(BaseCommand):
             'inscricaoequipe',
             'inscricaojogador',
             'partida',
+            'estatisticapartida',
         ]
 
         acoes = ['add', 'change', 'delete', 'view']

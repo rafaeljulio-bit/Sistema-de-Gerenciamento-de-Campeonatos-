@@ -191,6 +191,112 @@
 
     </div>
 
+<!-- Artilharia -->
+
+<h2 class="text-green mt-5 mb-4">
+    Artilharia
+</h2>
+
+<div class="card p-3 mb-4">
+
+    <div class="table-responsive">
+
+        <table class="table table-dark table-hover align-middle mb-0">
+
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Jogador</th>
+                    <th>Equipe</th>
+                    <th class="text-center">Gols</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for linha in artilharia %}
+
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ linha.jogador }}</td>
+                        <td>{{ linha.equipe }}</td>
+
+                        <td class="text-center destaqueEstatistica">
+                            {{ linha.totalGols }}
+                        </td>
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+                        <td colspan="4" class="text-center p-4">
+                            Nenhum gol registrado para os jogadores.
+                        </td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- Assistências -->
+
+<h2 class="text-green mt-5 mb-4">
+    Assistências
+</h2>
+
+<div class="card p-3 mb-4">
+
+    <div class="table-responsive">
+
+        <table class="table table-dark table-hover align-middle mb-0">
+
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Jogador</th>
+                    <th>Equipe</th>
+                    <th class="text-center">Assistências</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for linha in rankingAssistencias %}
+
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ linha.jogador }}</td>
+                        <td>{{ linha.equipe }}</td>
+
+                        <td class="text-center destaqueEstatistica">
+                            {{ linha.totalAssistencias }}
+                        </td>
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+                        <td colspan="4" class="text-center p-4">
+                            Nenhuma assistência registrada.
+                        </td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
 {% else %}
 
     <div class="card p-4 text-center">

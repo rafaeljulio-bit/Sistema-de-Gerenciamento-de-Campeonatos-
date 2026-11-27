@@ -39,4 +39,88 @@
 
 </div>
 
+{% if tipo == 'estatisticasPartidas' %}
+
+<script>
+
+    const campoPartida = document.getElementById('id_partida');
+
+    const campoJogador = document.getElementById(
+        'id_inscricao_jogador'
+    );
+
+    const jogadores = Array.from(campoJogador.options)
+        .filter(opcao => opcao.value !== '');
+
+    function filtrarJogadores() {
+
+        const jogadorSelecionado = campoJogador.value;
+
+        const partida = campoPartida.selectedOptions[0];
+
+        campoJogador.innerHTML = '';
+
+        if (!partida || !partida.value) {
+
+            campoJogador.add(
+                new Option('Selecione uma partida primeiro', '')
+            );
+
+            campoJogador.disabled = true;
+
+            return;
+        }
+
+        const mandante = partida.dataset.mandante;
+        const visitante = partida.dataset.visitante;
+
+        const jogadoresDisponiveis = jogadores.filter(jogador =>
+
+            jogador.dataset.equipe === mandante ||
+            jogador.dataset.equipe === visitante
+
+        );
+
+        campoJogador.disabled = false;
+
+        if (jogadoresDisponiveis.length === 0) {
+
+            campoJogador.add(
+                new Option('Nenhum jogador inscrito neste confronto', '')
+            );
+
+            return;
+        }
+
+        campoJogador.add(
+            new Option('Selecione um jogador', '')
+        );
+
+        jogadoresDisponiveis.forEach(jogador => {
+
+            campoJogador.add(jogador.cloneNode(true));
+
+        });
+
+        if (jogadoresDisponiveis.some(
+            jogador => jogador.value === jogadorSelecionado
+        )) {
+
+            campoJogador.value = jogadorSelecionado;
+
+        } else {
+
+            campoJogador.value = '';
+
+        }
+    }
+
+    campoPartida.addEventListener('change', filtrarJogadores);
+
+    filtrarJogadores();
+
+</script>
+
+{% endif %}
+
 {% endblock %}

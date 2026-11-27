@@ -218,9 +218,55 @@
 
                     </div>
 
-                    <hr>
+                   {% if partida.status == 'realizada' %}
 
-                    <div class="text-center detalhesPartida">
+    <hr>
+
+    <div class="row autoresGols">
+
+        <div class="col-6">
+
+            {% for estatistica in partida.golsMandante %}
+
+                <p class="mb-1">
+                    &#9917;
+                    {{ estatistica.inscricao_jogador.jogador_equipe.jogador.nome }}
+                    ({{ estatistica.gols }})
+                </p>
+
+            {% empty %}
+
+                <p class="mb-1">—</p>
+
+            {% endfor %}
+
+        </div>
+
+        <div class="col-6 text-end">
+
+            {% for estatistica in partida.golsVisitante %}
+
+                <p class="mb-1">
+                    {{ estatistica.inscricao_jogador.jogador_equipe.jogador.nome }}
+                    ({{ estatistica.gols }})
+                    &#9917;
+                </p>
+
+            {% empty %}
+
+                <p class="mb-1">—</p>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+{% endif %}
+
+<hr>
+
+<div class="text-center detalhesPartida">
 
                         <p class="mb-1">
 

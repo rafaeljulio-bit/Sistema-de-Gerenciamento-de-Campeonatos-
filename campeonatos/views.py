@@ -18,6 +18,9 @@ from .services import calcular_classificacao
 from .services import separar_partidas
 from django.contrib.auth.models import User, Group
 from django.db.models import Q
+from .models import EstatisticaPartida
+from .forms import EstatisticaPartidaForm
+from .services import calcularEstatisticasJogadores
 from .forms import (
     CadastroOrganizadorForm,
     EditarOrganizadorForm,
@@ -178,6 +181,12 @@ CADASTROS = {
         'form': PartidaForm,
         'titulo': 'Partidas e resultados',
     },
+
+        'estatisticasPartidas': {
+        'modelo': EstatisticaPartida,
+        'form': EstatisticaPartidaForm,
+        'titulo': 'Estatísticas dos jogadores',
+    },
 }
 
 
@@ -336,6 +345,8 @@ def classificacaoPublica(request):
 
     campeonato = None
     classificacao = []
+    artilharia = []
+    rankingAssistencias = []
 
     campeonatoId = request.GET.get('campeonato')
 
@@ -351,10 +362,18 @@ def classificacaoPublica(request):
 
         classificacao = calcular_classificacao(campeonato)
 
+        estatisticas = calcularEstatisticasJogadores(campeonato)
+
+        artilharia = estatisticas['artilharia']
+
+        rankingAssistencias = estatisticas['rankingAssistencias']
+
     return render(request, 'classificacaoPublica.html', {
         'campeonatos': campeonatos,
         'campeonato': campeonato,
         'classificacao': classificacao,
+        'artilharia': artilharia,
+        'rankingAssistencias': rankingAssistencias,
     })
 
 def listarCampeonatos(request):
@@ -412,7 +431,37 @@ def partidasPublicas(request):
             pk=campeonatoId
         )
 
-        partidas = separar_partidas(campeonato)[situacao]
+        partidas = list(separar_partidas(campeonato)[situacao])
+
+        estatisticas = EstatisticaPartida.objects.filter(
+            partida__in=partidas,
+            partida__status='realizada',
+            gols__gt=0
+        ).select_related(
+            'inscricao_jogador__jogador_equipe__jogador',
+            'inscricao_jogador__inscricao_equipe'
+        ).order_by('-gols')
+
+        golsPorEquipe = {}
+
+        for estatistica in estatisticas:
+
+            chave = (
+                estatistica.partida_id,
+                estatistica.inscricao_jogador.inscricao_equipe_id
+            )
+
+            golsPorEquipe.setdefault(chave, []).append(estatistica)
+
+        for partida in partidas:
+
+            partida.golsMandante = golsPorEquipe.get(
+                (partida.pk, partida.equipe_mandante_id), []
+            )
+
+            partida.golsVisitante = golsPorEquipe.get(
+                (partida.pk, partida.equipe_visitante_id), []
+            )
 
     return render(request, 'partidasPublicas.html', {
         'campeonatos': campeonatos,
